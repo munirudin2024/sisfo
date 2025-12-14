@@ -1,0 +1,240 @@
+/* src/index.css */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+:root {
+  --bg: #ffffff;
+  --bg-soft: #f6f8fa;
+  --text: #24292e;
+  --text-soft: #586069;
+  --primary: #0366d6;
+  --primary-soft: #d1e4ff;
+  --border: #e1e4e8;
+  --radius: 6px;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html,
+body {
+  height: 100%;
+}
+body {
+  font-family: var(--font);
+  background: var(--bg-soft);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+#root {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+a:hover {
+  color: var(--text);
+}
+button {
+  cursor: pointer;
+  font-family: inherit;
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  font-weight: 500;
+  transition: background 0.2s;
+}
+button:hover {
+  background: #0256cc;
+}
+input {
+  font-family: inherit;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 100%;
+  font-size: 14px;
+}
+input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+code {
+  font-family: "Consolas", "Courier New", monospace;
+  background: var(--bg-soft);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+/* Compact card for login */
+.card {
+  max-width: 260px;
+  margin: 60px auto;
+  background: var(--bg);
+  padding: 20px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.form-stack input,
+.form-stack button {
+  width: 100%;
+  max-width: 220px;
+  margin: 0 auto;
+}
+
+/* ---------- Navbar ---------- */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 24px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.brand {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--primary);
+}
+
+.nav-links {
+  display: flex;
+  gap: 16px;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-name {
+  font-size: 0.9rem;
+  color: var(--text-soft);
+}
+
+.btn-logout {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  transition: background 0.2s, color 0.2s;
+}
+
+.btn-logout:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* ---------- widget ---------- */
+.widgets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  padding: 24px;
+}
+
+.widget-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+/* ---------- Widget Form ---------- */
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+.form-stack label {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.form-stack input,
+.form-stack select,
+.form-stack textarea {
+  width: 100%;
+}
+/* ---------- Widget image ---------- */
+.foto-widget img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+  object-fit: cover;
+}
+.foto-caption {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  text-align: center;
+}
+/* ---------- Widget sheet ---------- */
+.sheet-widget .table-wrapper {
+  max-height: 240px;
+  overflow: auto;
+  margin-top: 8px;
+}
+.sheet-widget table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+.sheet-widget th,
+.sheet-widget td {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+.sheet-widget th {
+  background: var(--bg-soft);
+  position: sticky;
+  top: 0;
+}
+/* ---------- maintenance ---------- */
+.maintenance {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background: #f6f8fa;
+  color: #586069;
+}
+.maintenance h1 {
+  font-size: 2rem;
+  margin-bottom: 12px;
+}
