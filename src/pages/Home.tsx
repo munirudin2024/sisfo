@@ -1,18 +1,33 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AnalogClock from "../components/widgets/AnalogClock";
 import MiniCalendar from "../components/widgets/MiniCalendar";
-import FormSerahTerimaAditive from "../components/widgets/FormSerahTerimaAditive";
-import FotoWidget from "../components/widgets/FotoWidget";
 import SheetWidget from "../components/widgets/SheetWidget";
 import DocumentViewer from "../components/widgets/DocumentViewer";
 import InventoryStat from "../components/widgets/InventoryStat";
+import ActivityLog from "../components/widgets/ActivityLog";
+import QuickSearch from "../components/widgets/QuickSearch";
+import WarehouseMetrics from "../components/widgets/WarehouseMetrics";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../firebase/config";
 
 export default function Home() {
   const [user] = useAuthState(auth);
   const [activeTab, setActiveTab] = useState<"overview" | "documents">("overview");
+  const [docQuery, setDocQuery] = useState("");
 
+  // Persist tab between sessions
+  useEffect(() => {
+    const stored = window.localStorage.getItem("home.activeTab");
+    if (stored === "overview" || stored === "documents") {
+      setActiveTab(stored);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("home.activeTab", activeTab);
+  }, [activeTab]);
+
+  // Sample documents with working preview for PDF
   const warehouseDocuments = [
     {
       id: "1",
@@ -24,7 +39,7 @@ export default function Home() {
       id: "2",
       name: "SOP Operasional Warehouse",
       type: "pdf" as const,
-      url: "/docs/sop-operasional.pdf",
+      url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
     },
     {
       id: "3",
@@ -32,6 +47,55 @@ export default function Home() {
       type: "pptx" as const,
       url: "/docs/panduan-sistem.pptx",
     },
+  ];
+
+  const filteredDocuments = useMemo(() => {
+    const q = docQuery.trim().toLowerCase();
+    if (!q) return warehouseDocuments;
+    return warehouseDocuments.filter(
+      (d) => d.name.toLowerCase().includes(q) || d.type.toLowerCase().includes(q)
+    );
+  }, [docQuery]);
+
+  const sampleProducts = [
+    { id: "p1", name: "Additive A1", sku: "ADD-A1", quantity: 42, category: "Additive" },
+    { id: "p2", name: "Pelumas X", sku: "LUB-X", quantity: 15, category: "Lubricant" },
+    { id: "p3", name: "Filter B", sku: "FLT-B", quantity: 120, category: "Filter" },
+    { id: "p4", name: "Sparepart C", sku: "SPR-C", quantity: 8, category: "Sparepart" },
+  ];
+
+  const recentActivities = [
+    {
+      id: "a1",
+      action: "Penerimaan Barang",
+      description: "SKU ADD-A1 diterima sebanyak 20 unit",
+      timestamp: new Date(Date.now() - 1000 * 60 * 12),
+      icon: "📦",
+      severity: "success" as const,
+    },
+    {
+      id: "a2",
+      action: "Pengiriman Barang",
+      description: "SKU FLT-B dikirim ke Store #12",
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4),
+      icon: "🚚",
+      severity: "info" as const,
+    },
+    {
+      id: "a3",
+      action: "Penyesuaian Stok",
+      description: "Penyesuaian stok Sparepart C",
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24),
+      icon: "🧮",
+      severity: "warning" as const,
+    },
+  ];
+
+  const metrics = [
+    { id: "m1", label: "Perputaran Stok", value: 4.2, unit: "x", icon: "🔄", benchmark: { value: 4.2, target: 5 } },
+    { id: "m2", label: "Akurasi Stok", value: "99.2%", icon: "🎯" },
+    { id: "m3", label: "Lead Time Rata-rata", value: 2.1, unit: "hari", icon: "⏱️" },
+    { id: "m4", label: "Fill Rate", value: "95%", icon: "📈", benchmark: { value: 95, target: 98 } },
   ];
 
   return (
@@ -67,9 +131,6 @@ export default function Home() {
             <div className="widget-container">
               <MiniCalendar />
             </div>
-            <div className="widget-container full-width">
-              <FormSerahTerimaAditive />
-            </div>
           </section>
 
           {/* Quick Stats */}
@@ -97,14 +158,14 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Gallery */}
-          <section className="gallery-section">
-            <h2>Dokumentasi Lapangan</h2>
-            <div className="photo-grid">
-              <FotoWidget src="/assets/foto1.jpg" caption="Area Penyimpanan" />
-              <FotoWidget src="/assets/foto2.jpg" caption="Zona Pengiriman" />
-              <FotoWidget src="/assets/foto3.jpg" caption="Kontrol Kualitas" />
-            </div>
+          {/* Metrics */}
+          <section className="metrics-section">
+            <WarehouseMetrics metrics={metrics} />
+          </section>
+
+          {/* Activity Log */}
+          <section className="activity-section">
+            <ActivityLog activities={recentActivities} />
           </section>
 
           {/* Sheets */}
@@ -115,10 +176,29 @@ export default function Home() {
               sheetUrl="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEnjzI7-T4r0EskDCDoPk_yV3eYAfAzreHG2VrfuYcfafaaJmpT7B_Jm-AkWtjof-RApfbpMTleO-G/pub?gid=0&single=true&output=csv"
             />
           </section>
+
+          {/* Quick Search */}
+          <section className="search-section">
+            <h2>Pencarian Cepat Produk</h2>
+            <QuickSearch
+              products={sampleProducts}
+              onSelect={(p) => alert(`Dipilih: ${p.name} / ${p.sku}`)}
+            />
+          </section>
         </div>
       ) : (
         <div className="home-documents">
-          <DocumentViewer title="Dokumen Warehouse" documents={warehouseDocuments} />
+          <div className="documents-header">
+            <h2>Dokumen Warehouse</h2>
+            <input
+              type="text"
+              placeholder="Filter dokumen... (nama/tipe)"
+              value={docQuery}
+              onChange={(e) => setDocQuery(e.target.value)}
+              className="doc-filter-input"
+            />
+          </div>
+          <DocumentViewer title="Dokumen Warehouse" documents={filteredDocuments} />
         </div>
       )}
     </div>

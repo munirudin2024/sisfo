@@ -24,6 +24,9 @@ import InspectionPage from "./pages/inspection/InspectionPage";
 import BarcodeRequestPage from "./pages/warehouse/BarcodeRequestPage";
 import InfoPage from "./pages/info/InfoPage";
 import StorePage from "./pages/store/StorePage";
+// Role-specific example pages
+import WarehouseManagerPage from "./pages/roles/WarehouseManager";
+import ReceivingClerkPage from "./pages/roles/ReceivingClerk";
 
 export default function App() {
   const [user] = useAuthState(auth);
@@ -77,7 +80,7 @@ export default function App() {
         <Route
           path="/admin/*"
           element={
-            <PrivateRoute requiredRole="admin">
+            <PrivateRoute requiredRoles={["Admin"]}>
               <Routes>
                 <Route path="" element={<AdminDashboard />} />
               </Routes>
@@ -154,6 +157,24 @@ export default function App() {
               <Routes>
                 <Route path="" element={<StorePage />} />
               </Routes>
+            </PrivateRoute>
+          }
+        />
+
+        {/* Role-specific examples */}
+        <Route
+          path="/role/warehouse-manager"
+          element={
+            <PrivateRoute requiredRoles={["Warehouse Manager"]}>
+              <WarehouseManagerPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/role/receiving-clerk"
+          element={
+            <PrivateRoute requiredRoles={["Receiving Clerk"]}>
+              <ReceivingClerkPage />
             </PrivateRoute>
           }
         />

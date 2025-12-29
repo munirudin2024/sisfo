@@ -1,9 +1,11 @@
 import { useState } from "react";
 import UserManagement from "../../features/users/UserManagement";
+import RoleManagement from "../../features/users/RoleManagement";
 import WarehouseManagement from "../../features/warehouse/WarehouseManagement";
 import HandoverDocumentComponent from "../../features/auth/HandoverDocument";
 import OnlineStore from "../../features/store/OnlineStore";
-import type { User, Role, Department, Warehouse, Rack, Pallet, HandoverDocument, StoreProduct } from "../../types";
+import AuditLog from "../../features/audit/AuditLog";
+import type { User, Role, Department, Warehouse, HandoverDocument, StoreProduct } from "../../types";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<string>("overview");
@@ -53,7 +55,7 @@ export default function AdminDashboard() {
   ]);
 
   const [users] = useState<User[]>(
-    roles.flatMap((r, i) => {
+    roles.flatMap((r) => {
       const slug = r.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
       return [1, 2].map((n) => ({
         id: `${r.id}-u${n}`,
@@ -73,34 +75,14 @@ export default function AdminDashboard() {
       name: "Warehouse A",
       location: "Jakarta Pusat",
       capacity: 10000,
+      totalLoad: 6500,
       isActive: true,
       createdAt: new Date(),
+      updatedAt: new Date(),
     },
   ]);
 
-  const [racks] = useState<Rack[]>([
-    {
-      id: "rack-1",
-      warehouseId: "wh-1",
-      rackCode: "A-01",
-      level: 1,
-      capacity: 500,
-      currentLoad: 350,
-      createdAt: new Date(),
-    },
-  ]);
-
-  const [pallets] = useState<Pallet[]>([
-    {
-      id: "pallet-1",
-      rackId: "rack-1",
-      palletCode: "PAL-001",
-      products: [{ id: "1", productId: "prod-1", quantity: 100 }],
-      method: "FIFO",
-      receivedDate: new Date(),
-      createdAt: new Date(),
-    },
-  ]);
+  // Sample rack/pallet data can be added when needed
 
   const [documents] = useState<HandoverDocument[]>([
     {
@@ -143,9 +125,11 @@ export default function AdminDashboard() {
         {[
           { id: "overview", label: "📊 Overview", icon: "📊" },
           { id: "users", label: "👥 Users", icon: "👥" },
+          { id: "roles", label: "🔐 Roles", icon: "🔐" },
           { id: "warehouse", label: "📦 Warehouse", icon: "📦" },
           { id: "documents", label: "📄 Documents", icon: "📄" },
           { id: "store", label: "🏪 Store", icon: "🏪" },
+          { id: "audit", label: "📋 Audit Log", icon: "📋" },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -202,11 +186,13 @@ export default function AdminDashboard() {
           />
         )}
 
+        {activeTab === "roles" && (
+          <RoleManagement />
+        )}
+
         {activeTab === "warehouse" && (
           <WarehouseManagement
             warehouses={warehouses}
-            racks={racks}
-            pallets={pallets}
           />
         )}
 
@@ -216,6 +202,10 @@ export default function AdminDashboard() {
 
         {activeTab === "store" && (
           <OnlineStore products={storeProducts} isAdmin={true} />
+        )}
+
+        {activeTab === "audit" && (
+          <AuditLog />
         )}
       </div>
     </div>

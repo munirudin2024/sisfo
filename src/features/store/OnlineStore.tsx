@@ -52,6 +52,25 @@ export default function OnlineStore({
 
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
+  const handleCheckout = () => {
+    if (cart.length === 0) return;
+    const payload = {
+      destinationType: "STORE",
+      destinationName: "Online Store",
+      shippingAddress: "",
+      originWarehouse: "Main Warehouse",
+      shippingMethod: "REGULAR",
+      carrier: "Internal Fleet",
+      items: cart.map((c) => ({ sku: c.productId, quantity: c.quantity })),
+    };
+    try {
+      window.localStorage.setItem("pendingShippingOrder", JSON.stringify(payload));
+      alert("Checkout disiapkan. Buka halaman Pengiriman untuk membuat DO.");
+    } catch (e) {
+      alert("Gagal menyimpan data checkout.");
+    }
+  };
+
   return (
     <div className="online-store">
       <div className="store-header">
@@ -186,7 +205,7 @@ export default function OnlineStore({
               <div className="cart-summary">
                 <h4>Total: Rp {cartTotal.toLocaleString("id-ID")}</h4>
                 <div className="cart-actions">
-                  <button className="btn-primary">✓ Checkout</button>
+                  <button className="btn-primary" onClick={handleCheckout}>✓ Checkout</button>
                   <button className="btn-secondary" onClick={() => setCart([])}>
                     🗑️ Kosongkan
                   </button>

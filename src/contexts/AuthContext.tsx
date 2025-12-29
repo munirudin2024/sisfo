@@ -2,7 +2,8 @@ import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { User as FirebaseUser } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../firebase/config";
+import { auth, db } from "../firebase/config";
+import { doc, getDoc } from "firebase/firestore";
 import type { User, Role, Department } from "../types";
 
 interface AuthContextType {
@@ -34,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Fetch user data dari Firestore
+    // Fetch user data dan roles dari Firestore
     const fetchUserData = async () => {
       try {
         // TODO: Fetch dari Firestore
@@ -43,12 +44,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           id: firebaseUser.uid,
           email: firebaseUser.email || "",
           displayName: firebaseUser.displayName || "User",
-          roleIds: ["admin"],
+          roleIds: ["role-1"],
           departmentIds: ["dept-1"],
           isActive: true,
           createdAt: new Date(),
         };
         setUserData(mockUser);
+        // load role documents for user's roleIds
+        const loadedRoles: Role[] = [];
+        for (const rid of mockUser.roleIds) {
+          try {
+            const snap = await getDoc(doc(db, "roles", rid));
+            if (snap.exists()) {
+              loadedRoles.push(snap.data() as Role);
+            }
+          } catch (e) {
+            // ignore missing role
+          }
+        }
+        setCurrentRoles(loadedRoles);
       } catch (error) {
         console.error("Error fetching user data:", error);
       }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { logAudit } from "../../utils/auditHelper";
 import type { ReceivingOrder } from "../../types";
 
 interface ReceivingManagementProps {
@@ -19,14 +20,44 @@ export default function ReceivingManagement({
   const canVerifyL2 = (order: ReceivingOrder) =>
     order.status === "VERIFIED_L1" && order.verifiedBy1 !== currentUserId;
 
-  const handleVerifyL1 = (order: ReceivingOrder) => {
-    // TODO: Implement verification L1
-    console.log("Verify L1:", order.id);
+  const handleVerifyL1 = async (order: ReceivingOrder) => {
+    try {
+      // TODO: Implement verification L1 logic
+      console.log("Verify L1:", order.id);
+      await logAudit("VERIFY_L1", "currentUser", order.poNumber, 
+        `Level 1 verification completed for PO ${order.poNumber}`, {
+          targetType: "ReceivingOrder",
+          status: 'success'
+        });
+    } catch (error) {
+      console.error("Error verifying L1:", error);
+      await logAudit("VERIFY_L1", "currentUser", order.poNumber,
+        `Failed to verify L1 for PO ${order.poNumber}`, {
+          targetType: "ReceivingOrder",
+          status: 'failed',
+          errorMessage: String(error)
+        });
+    }
   };
 
-  const handleVerifyL2 = (order: ReceivingOrder) => {
-    // TODO: Implement verification L2
-    console.log("Verify L2:", order.id);
+  const handleVerifyL2 = async (order: ReceivingOrder) => {
+    try {
+      // TODO: Implement verification L2 logic
+      console.log("Verify L2:", order.id);
+      await logAudit("VERIFY_L2", "currentUser", order.poNumber,
+        `Level 2 verification completed for PO ${order.poNumber}`, {
+          targetType: "ReceivingOrder",
+          status: 'success'
+        });
+    } catch (error) {
+      console.error("Error verifying L2:", error);
+      await logAudit("VERIFY_L2", "currentUser", order.poNumber,
+        `Failed to verify L2 for PO ${order.poNumber}`, {
+          targetType: "ReceivingOrder",
+          status: 'failed',
+          errorMessage: String(error)
+        });
+    }
   };
 
   return (

@@ -3,10 +3,12 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { auth } from "../firebase/config";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { signOut } from "firebase/auth";
+import { useAuth } from "../contexts/AuthContext";
 
 // Redesigned Navbar: grouped feature sections and role-aware placeholders
 export default function Navbar() {
   const [user] = useAuthState(auth);
+  const { isAdmin, hasRole } = useAuth();
   const nav = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -29,6 +31,8 @@ export default function Navbar() {
         { path: "/", label: "🏠 Beranda" },
         { path: "/info", label: "ℹ️ Informasi" },
       ],
+      // visible to all authenticated users
+      allowedRoles: [],
     },
     {
       id: "management",
@@ -38,6 +42,7 @@ export default function Navbar() {
         { path: "/users", label: "👥 Pengguna" },
         { path: "/departments", label: "🏢 Departemen" },
       ],
+      allowedRoles: ["Admin", "Warehouse Manager", "Inventory Controller", "Forklift Operator", "Logistics Coordinator"],
     },
     {
       id: "warehouse",
@@ -48,6 +53,7 @@ export default function Navbar() {
         { path: "/warehouse/barcode", label: "📱 Barcode" },
         { path: "/warehouse/analytics", label: "📈 Analytics" },
       ],
+      allowedRoles: ["Admin", "Warehouse Manager", "Receiving Clerk", "Shipping Clerk", "Quality Inspector", "Inventory Controller"],
     },
     {
       id: "operations",
@@ -57,6 +63,7 @@ export default function Navbar() {
         { path: "/shipping", label: "📤 Pengiriman" },
         { path: "/inspection", label: "✓ Inspeksi Kebersihan" },
       ],
+      allowedRoles: ["Admin", "Receiving Clerk", "Shipping Clerk", "Quality Inspector"],
     },
     {
       id: "store",
@@ -65,6 +72,7 @@ export default function Navbar() {
         { path: "/store", label: "🏪 Toko Online" },
         { path: "/suppliers", label: "🚚 Supplier" },
       ],
+      allowedRoles: ["Admin", "Store Manager", "Supplier Manager", "Procurement", "Purchasing Manager"],
     },
   ];
 
@@ -78,8 +86,10 @@ export default function Navbar() {
           </Link>
 
           <nav className="nav-links groups">
-            {menuGroups.map((group) => (
-              <div key={group.id} className={`nav-group ${openGroup === group.id ? "open" : ""}`}>
+            {menuGroups
+              .filter((group) => isAdmin || !group.allowedRoles || group.allowedRoles.some((r) => hasRole(r)))
+              .map((group) => (
+                <div key={group.id} className={`nav-group ${openGroup === group.id ? "open" : ""}`}>
                 <button
                   className={`nav-group-toggle ${openGroup === group.id ? "active" : ""}`}
                   onClick={() => setOpenGroup(openGroup === group.id ? null : group.id)}

@@ -35,14 +35,17 @@ export interface Department {
   createdAt: Date;
 }
 
-// Warehouse Types
+// Warehouse Types - ENHANCED
 export interface Warehouse {
   id: string;
   name: string;
   location: string;
   capacity: number;
+  totalLoad: number;
+  managerId?: string;
   isActive: boolean;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Rack {
@@ -50,6 +53,17 @@ export interface Rack {
   warehouseId: string;
   rackCode: string;
   level: number;
+  section?: string; // A, B, C, etc
+  capacity: number;
+  currentLoad: number;
+  isActive: boolean;
+  createdAt: Date;
+}
+
+export interface Box {
+  id: string;
+  rackId: string;
+  boxCode: string;
   capacity: number;
   currentLoad: number;
   createdAt: Date;
@@ -57,36 +71,160 @@ export interface Rack {
 
 export interface Pallet {
   id: string;
-  rackId: string;
   palletCode: string;
-  products: PalletItem[];
-  method: 'FIFO' | 'FEFO';
-  receivedDate: Date;
-  expiryDate?: Date;
+  warehouseId: string;
+  rackId?: string;
+  boxId?: string;
+  inventoryItems: string[]; // Array of inventory item IDs
+  totalQuantity: number;
   createdAt: Date;
+  updatedAt: Date;
 }
 
-export interface PalletItem {
+// SKU & Inventory Types - ENHANCED
+export interface SKU {
   id: string;
-  productId: string;
-  quantity: number;
-  serial?: string;
-}
-
-// Product Types
-export interface Product {
-  id: string;
-  sku: string;
+  code: string; // Unique SKU code
   name: string;
   description?: string;
-  category: 'RAW_MATERIAL' | 'PRODUCTION_MATERIAL' | 'FINISHED_GOODS';
-  quantity: number;
-  minQuantity: number;
-  barcode?: string;
-  hasBarcode: boolean;
-  price: number;
-  supplier?: string;
+  barcode: string; // For scanning
+  category: 'RAW_MATERIAL' | 'PRODUCTION_MATERIAL' | 'FINISHED_GOODS' | 'ADDITIVE';
+  unit: string; // pcs, kg, liter, etc
   createdAt: Date;
+}
+
+export interface InventoryItem {
+  id: string;
+  skuId: string;
+  skuCode: string;
+  skuName: string;
+  barcode: string;
+  poNumber: string;
+  lotNumber?: string;
+  serialNumber?: string;
+  
+  // Location Info
+  warehouseId: string;
+  warehouseName: string;
+  rackId: string;
+  rackCode: string;
+  boxId?: string;
+  palletId: string;
+  palletCode: string;
+  
+  // Quantity Tracking
+  quantityReceived: number;
+  quantityAvailable: number;
+  quantityReserved: number; // For SO
+  quantityOnHold: number;
+  quantityDamaged: number;
+  
+  // Dates
+  receivedDate: Date;
+  expiryDate: Date;
+  lastMovedDate: Date;
+  lastScannedDate?: Date;
+  
+  // Status
+  status: 'ACTIVE' | 'HOLD' | 'QUARANTINE' | 'RESERVED' | 'DAMAGED' | 'EXPIRED';
+  holdReason?: string;
+  holdUntilDate?: Date;
+  
+  // FIFO/FEFO Info
+  storageMethod: 'FIFO' | 'FEFO';
+  isReadyToShip: boolean; // Based on FIFO/FEFO rules
+  shippingPriority: number; // 1 = highest priority
+  
+  // Notes
+  notes?: string;
+  designVersion?: string; // For design-based logic
+  
+  // Audit
+  createdBy: string;
+  lastUpdatedBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface InventoryMove {
+  id: string;
+  inventoryItemId: string;
+  skuCode: string;
+  
+  // From
+  fromWarehouse: string;
+  fromRack?: string;
+  fromBox?: string;
+  fromPallet: string;
+  
+  // To
+  toWarehouse: string;
+  toRack?: string;
+  toBox?: string;
+  toPallet: string;
+  
+  moveType: 'RELOCATION' | 'PICKING' | 'RESTOCKING' | 'CONSOLIDATION';
+  reason?: string;
+  
+  movedBy: string;
+  movedAt: Date;
+  createdAt: Date;
+}
+
+export interface InventoryAudit {
+  id: string;
+  inventoryItemId: string;
+  skuCode: string;
+  
+  changeType: 'RECEIVED' | 'SHIPPED' | 'ADJUSTED' | 'MOVED' | 'HOLD' | 'RELEASED' | 'DAMAGED' | 'EXPIRED';
+  quantityChange: number;
+  quantityBefore: number;
+  quantityAfter: number;
+  
+  statusBefore?: string;
+  statusAfter?: string;
+  
+  notes?: string;
+  changedBy: string;
+  relatedDocument?: string; // PO, SO, etc
+  
+  createdAt: Date;
+}
+
+export interface InventorySummary {
+  skuCode: string;
+  skuName: string;
+  totalQuantity: number;
+  totalAvailable: number;
+  totalReserved: number;
+  totalOnHold: number;
+  totalDamaged: number;
+  
+  // Location breakdown
+  locations: InventoryLocation[];
+  
+  // Status info
+  readyToShip: number;
+  readyToShipLocations: InventoryLocation[];
+  
+  expiredCount: number;
+  expiringSoon: number; // < 30 days
+  
+  lastUpdated: Date;
+}
+
+export interface InventoryLocation {
+  warehouseId: string;
+  warehouseName: string;
+  rackId: string;
+  rackCode: string;
+  boxId?: string;
+  palletId: string;
+  palletCode: string;
+  quantity: number;
+  status: string;
+  expiryDate: Date;
+  receivedDate: Date;
 }
 
 // Receiving Types
@@ -128,6 +266,16 @@ export interface ShippingOrder {
   completedDate?: Date;
   departmentId: string;
   createdAt: Date;
+  // Extensions for destination & logistics
+  destinationType?: 'STORE' | 'SUPPLIER';
+  destinationName?: string;
+  shippingAddress?: string;
+  originWarehouse?: string;
+  shippingMethod?: 'REGULAR' | 'EXPRESS' | 'TRUCK';
+  carrier?: string;
+  trackingNumber?: string;
+  shippingCost?: number;
+  notes?: string;
 }
 
 export interface ShippingItem {
