@@ -1,5 +1,5 @@
 // src/App.tsx
-import Maintenance from "./components/Maintenance";
+import { useEffect, useState } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -8,25 +8,62 @@ import {
 } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import PrivateRoute from "./components/PrivateRoute";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "./firebase/config";
+import { getConfig } from "./utils/config";
+import Maintenance from "./components/Maintenance";
 
-//const MAINTENANCE = true; // <— sedang perbaikan
-const MAINTENANCE = false; // <— kembali online
+// Pages
+import Login from "./pages/Login";
+import Home from "./pages/Home";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import WarehousePage from "./pages/warehouse/WarehousePage";
+import ReceivingPage from "./pages/receiving/ReceivingPage";
+import ShippingPage from "./pages/shipping/ShippingPage";
+import InspectionPage from "./pages/inspection/InspectionPage";
+import BarcodeRequestPage from "./pages/warehouse/BarcodeRequestPage";
+import InfoPage from "./pages/info/InfoPage";
+import StorePage from "./pages/store/StorePage";
 
 export default function App() {
-  if (MAINTENANCE) return <Maintenance />; // sembunyikan semua
-
   const [user] = useAuthState(auth);
+  const [isLoading, setIsLoading] = useState(true);
+  const config = getConfig();
+
+  useEffect(() => {
+    // Simulate initial load
+    setTimeout(() => setIsLoading(false), 500);
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100vh",
+        background: "#f8fafc",
+      }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: "3rem", marginBottom: "16px" }}>📦</div>
+          <p style={{ fontSize: "1.1rem", color: "#64748b" }}>Memuat Sistem...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (config.maintenanceMode) {
+    return <Maintenance />;
+  }
 
   return (
     <Router>
       {user && <Navbar />}
       <Routes>
+        {/* Public Routes */}
         <Route path="/login" element={<Login />} />
+
+        {/* Protected Routes */}
         <Route
           path="/"
           element={
@@ -35,15 +72,94 @@ export default function App() {
             </PrivateRoute>
           }
         />
+
+        {/* Admin Routes */}
         <Route
-          path="/dashboard"
+          path="/admin/*"
           element={
-            <PrivateRoute>
-              <Dashboard />
+            <PrivateRoute requiredRole="admin">
+              <Routes>
+                <Route path="" element={<AdminDashboard />} />
+              </Routes>
             </PrivateRoute>
           }
         />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+
+        {/* Warehouse Routes */}
+        <Route
+          path="/warehouse/*"
+          element={
+            <PrivateRoute>
+              <Routes>
+                <Route path="" element={<WarehousePage />} />
+                <Route path="barcode" element={<BarcodeRequestPage />} />
+              </Routes>
+            </PrivateRoute>
+          }
+        />
+
+        {/* Receiving Routes */}
+        <Route
+          path="/receiving/*"
+          element={
+            <PrivateRoute>
+              <Routes>
+                <Route path="" element={<ReceivingPage />} />
+              </Routes>
+            </PrivateRoute>
+          }
+        />
+
+        {/* Shipping Routes */}
+        <Route
+          path="/shipping/*"
+          element={
+            <PrivateRoute>
+              <Routes>
+                <Route path="" element={<ShippingPage />} />
+              </Routes>
+            </PrivateRoute>
+          }
+        />
+
+        {/* Inspection Routes */}
+        <Route
+          path="/inspection/*"
+          element={
+            <PrivateRoute>
+              <Routes>
+                <Route path="" element={<InspectionPage />} />
+              </Routes>
+            </PrivateRoute>
+          }
+        />
+
+        {/* Info Routes */}
+        <Route
+          path="/info/*"
+          element={
+            <PrivateRoute>
+              <Routes>
+                <Route path="" element={<InfoPage />} />
+              </Routes>
+            </PrivateRoute>
+          }
+        />
+
+        {/* Store Routes */}
+        <Route
+          path="/store/*"
+          element={
+            <PrivateRoute>
+              <Routes>
+                <Route path="" element={<StorePage />} />
+              </Routes>
+            </PrivateRoute>
+          }
+        />
+
+        {/* Catch all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );

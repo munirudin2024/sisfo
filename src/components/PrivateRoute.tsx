@@ -1,24 +1,50 @@
-import React from "react"; // <-- PENTING: Tambahkan impor React untuk mendukung JSX
+import React from "react";
 import { Navigate } from "react-router-dom";
 import { auth } from "../firebase/config";
 import { useAuthState } from "react-firebase-hooks/auth";
 
 type PrivateRouteProps = {
-  // Biarkan kosong jika Anda menggunakan React.PropsWithChildren
-  // atau pertahankan 'children: JSX.Element' jika Anda suka.
+  requiredRole?: string;
 };
 
-// Menggunakan React.PropsWithChildren untuk tipe yang lebih standar
 export default function PrivateRoute({
   children,
+  requiredRole,
 }: React.PropsWithChildren<PrivateRouteProps>) {
-  // Ambil state pengguna dari Firebase Hooks
   const [user, loading] = useAuthState(auth);
 
-  // 1. Tampilkan Loading saat otentikasi sedang berjalan
-  if (loading) return <p>Loading...</p>;
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100vh",
+          background: "#f8fafc",
+        }}
+      >
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: "2rem", marginBottom: "12px" }}>⏳</div>
+          <p style={{ color: "#64748b" }}>Memverifikasi akses...</p>
+        </div>
+      </div>
+    );
+  }
 
-  // 2. Jika user ditemukan, tampilkan komponen anak (Dashboard/Home/etc)
-  // 3. Jika user TIDAK ditemukan, alihkan ke halaman Login
-  return user ? children : <Navigate to="/login" replace />;
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // TODO: Implement role checking when auth system is complete
+  // For now, allow all authenticated users
+  if (requiredRole) {
+    // Check if user has required role
+    // const userRoles = await fetchUserRoles(user.uid);
+    // if (!userRoles.includes(requiredRole)) {
+    //   return <Navigate to="/" replace />;
+    // }
+  }
+
+  return children;
 }

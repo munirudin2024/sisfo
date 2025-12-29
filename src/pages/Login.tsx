@@ -3,7 +3,6 @@ import { useState } from "react";
 import { auth } from "../firebase/config";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import welcomeSound from "../assets/welcome.mp3"; // 1. import
 
 export default function Login() {
   const nav = useNavigate();
@@ -15,12 +14,7 @@ export default function Login() {
     try {
       await signInWithEmailAndPassword(auth, email, pass);
 
-      // 2. putar audio setelah berhasil login
-      const audio = new Audio(welcomeSound);
-
-      audio.play().catch(() => {}); // ignore jika browser block
-      audio.loop = true; // <-- replay terus
-      audio.volume = 0.4; // <-- opsional: lebih pelan
+      // Successful login (audio playback removed for cleaner UX)
       nav("/");
     } catch (e: any) {
       alert(e.message);
